@@ -29,7 +29,7 @@ try {
     echo "Connection failed: " . $e->getMessage();
 }
 try {
-    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE `marketGroupID` IS NOT NULL");
+    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID NOT IN (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
     $query->execute();
 //            echo gettype($query) . '<br>';
     $item_ids = $query->fetchAll();
