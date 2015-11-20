@@ -4,3 +4,5 @@ mysql -p -u {username} {database} < file.sql
 When using xampp this would be 
 C:\xampp\mysql\mysql -p -u root eve < file.sql
 
+To run a php file outside of apachy run this in the command line
+C:\xampp\php\php -f "C:\xampp\htdocs\Eve_industry_data\updateBD.php"
