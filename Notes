@@ -1,0 +1,6 @@
+How to import a mySQL data file
+mysql -p -u {username} {database} < file.sql
+
+When using xampp this would be 
+C:\xampp\mysql\mysql -p -u root eve < file.sql
+
