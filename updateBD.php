@@ -17,9 +17,11 @@ try {
     // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connected successfully" . PHP_EOL;
-
+    
+    //Quick query
     $val = mysql_query('select 1 from jitamarket LIMIT 1');
 
+    //Checking if the table exists and then creating it if it doesn't
     if ($val !== FALSE) {
         echo "Table exists" . PHP_EOL;
     } else {
@@ -37,6 +39,8 @@ try {
     echo "Connection failed: " . $e->getMessage();
 }
 try {
+    
+    //Selecting all itemID's that are buyable on the market and are not BP's or skils
     $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID NOT IN (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
     $query->execute();
 
@@ -60,10 +64,11 @@ foreach ($item_ids as $value) {
 
     curl_close($curl_handle);
 
-    echo 'Data returned. ';
+    echo 'Data returned. ' . PHP_EOL;
 
     $xml = simplexml_load_string($http);
 
+    //add the data returned to the BD
     if ($xml !== null) {
         $buy = (string) $xml->marketstat->type->buy->max; // max buy price
         $sell = (string) $xml->marketstat->type->sell->min;
