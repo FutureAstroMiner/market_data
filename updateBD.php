@@ -17,25 +17,31 @@ try {
     // set the PDO error mode to exception
     $conn->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
     echo "Connected successfully" . PHP_EOL;
-//            $sql = $conn->prepare("CREATE TABLE jitamarket (
-//    typeID BIGINT PRIMARY KEY,
-//    volume DOUBLE,
-//    max DECIMAL(19,2),
-//    min DECIMAL(19,2)
-//    )");
-//            $sql->execute();
-//            echo "Table created successfully<br>";
+
+    $val = mysql_query('select 1 from jitamarket LIMIT 1');
+
+    if ($val !== FALSE) {
+        echo "Table exists" . PHP_EOL;
+    } else {
+        $sql = $conn->prepare("CREATE TABLE jitamarket (
+        typeID BIGINT PRIMARY KEY,
+        volume DOUBLE,
+        max DECIMAL(19,2),
+        min DECIMAL(19,2)
+        )");
+        $sql->execute();
+        echo "Table created successfully" . PHP_EOL;
+    }
+    
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage();
 }
 try {
     $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID NOT IN (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
     $query->execute();
-//            echo gettype($query) . '<br>';
+
     $item_ids = $query->fetchAll();
-//            print_r($item_ids);
-//            echo gettype($item_ids) . '<br>';
-//            print_r($item_ids);
+
     echo 'Items retrieved from DB: ' . count($item_ids) . PHP_EOL;
 } catch (PDOException $e) {
     echo "Connection failed to invtypes: " . $e->getMessage();
@@ -43,13 +49,9 @@ try {
 
 foreach ($item_ids as $value) {
     set_time_limit(30);
-//            echo gettype($item_id[0]) . '<br>';
-//            echo $item_id[0] . '<br>';
-//            print_r($item_id);
+
     $item_id = intval($value['typeID']);
-//    $item_id = intval($item_ids[4]['typeID']);
-//    print_r($item_ids[4]['typeID']);
-//    print_r($item_ids);
+
     echo 'Quering market data for item: ' . $item_id . PHP_EOL;
 
     $curl_handle = curl_init('http://api.eve-central.com/api/marketstat?typeid=' . $item_id . '&usesystem=30000142');
@@ -61,31 +63,11 @@ foreach ($item_ids as $value) {
     echo 'Data returned. ';
 
     $xml = simplexml_load_string($http);
-//                echo $xml->asXML();
-//                echo gettype($xml) . '<br>';
-//                echo $xml->xpath('//buy')[0] . '<br>';
-//                print_r((string) $xml->marketstat->type->buy->max->asXML());
-//                var_dump((string) $xml->marketstat->type->buy);
-//echo $xml->asXML();
-    if ($xml != null) {
+
+    if ($xml !== null) {
         $buy = (string) $xml->marketstat->type->buy->max; // max buy price
         $sell = (string) $xml->marketstat->type->sell->min;
         $buy_vol = (string) $xml->marketstat->type->buy->volume;
-
-//                    print_r($buy);
-//                    echo gettype($buy) . '<br>';
-//                    $max_buy = $buy[0]->attributes();
-//                    $test = $buy[0];
-//                    echo gettype($max_buy) . '<br>';
-//                    echo $max_buy;
-//                    print_r($max_buy);
-//                    
-//                    print_r($buy[0]['volume']);
-//                    print_r($sell);
-//                    $sql = $conn->prepare("UPDATE jitamarket SET typeID='" . $item_id . "' volume='" . $buy_vol . "'"
-//                            . "max='" . $buy . "'"
-//                            . "sell='" . $sell . "'");
-
 
         try {
             $row_exists = $conn->query("SELECT * FROM `jitamarket` WHERE typeID=" . $item_id);
@@ -103,10 +85,6 @@ foreach ($item_ids as $value) {
             echo "Cannot add entry: " . $e->getMessage();
         }
     }
-//    }
-//    $query = $conn->prepare("SELECT * FROM `mapsolarsystems`");
-//    $query->execute();
-//    foreach ($query->fetchAll() as $value) {
-//      echo $value->;
-     }
+
+}
 ?>
