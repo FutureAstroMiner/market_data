@@ -10,7 +10,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "root";
-$dbname = "test";
+$dbname = "eve";
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -56,9 +56,15 @@ try {
 
 $chunked_array = array_chunk($item_ids, 100, TRUE);
 
+$num = 1;
+
+$chunked_array_size = count($chunked_array);
+
 //for each smaller array construct the url
 foreach ($chunked_array as $chunk) {
 //$chunk = $chunked_array[0];
+    
+    echo 'Starting chunk ' . $num . ' of ' . $chunked_array_size . PHP_EOL;
     set_time_limit(30);
     $item_string = '';
     foreach ($chunk as $value) {
@@ -77,6 +83,8 @@ foreach ($chunked_array as $chunk) {
 
     $xml = simplexml_load_string($http);
     echo 'Data returned ' . $xml->children()->children()->count() . PHP_EOL;
+    
+    $num +=1;
 
 //enter returned values into DB
     foreach ($xml->children()->children() as $item) {
