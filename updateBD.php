@@ -10,7 +10,7 @@
 $servername = "localhost";
 $username = "root";
 $password = "root";
-$dbname = "eve";
+$dbname = "test";
 
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
@@ -39,7 +39,6 @@ try {
     echo "Connection failed: " . $e->getMessage() . PHP_EOL;
 }
 try {
-
     //Selecting all itemID's that are buyable on the market and are not BP's or skils
     $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID NOT IN (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
     $query->execute();
@@ -48,12 +47,11 @@ try {
 
     echo 'Items retrieved from DB: ' . count($item_ids) . PHP_EOL;
 } catch (PDOException $e) {
-    echo "Connection failed to invtypes: " . $e->getMessage();
+    echo "Could not get items: " . $e->getMessage();
 }
 
 //chunk array into smaller arrays
-
-
+//100is the max possible for the max size URL
 $chunked_array = array_chunk($item_ids, 100, TRUE);
 
 $num = 1;
@@ -80,35 +78,47 @@ foreach ($chunked_array as $chunk) {
     curl_close($curl_handle);
 
     echo 'Webpage returned.' . PHP_EOL;
-
-    $xml = simplexml_load_string($http);
-    echo 'Data returned ' . $xml->children()->children()->count() . PHP_EOL;
+    
+    processWebpage($http);
     
     $num +=1;
+}
 
-//enter returned values into DB
+// Helper function to find needed values from returned webpage
+function processWebpage($webpage) {
+    $xml = simplexml_load_string($webpage);
+    echo 'Data returned ' . $xml->children()->children()->count() . PHP_EOL;
+    
+//find the values returned
     foreach ($xml->children()->children() as $item) {
 
         $item_id = $item->attributes();
 
-        //add the data returned to the BD
         if ($xml !== FALSE) {
             $buy = implode($item->xpath("/buy/max"));
             $sell = implode($item->xpath("/sell/min"));
             $buy_vol = implode($item->xpath("/buy/volume"));
+            
+            //add the data returned to the BD
+            enterValues($item_id, $buy, $sell, $buy_vol);
+        }
+    }
+    
+}
 
-            try {
+// Helper function to enter values into database
+function enterValues($id, $highistBuy, $lowestSell, $salesVolume) {
+    try {
+        global $conn;
                 $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min) "
-                        . "VALUES ('$item_id', '$buy_vol', '$buy', '$sell') ON DUPLICATE KEY "
+                        . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell') ON DUPLICATE KEY "
                         . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min)");
                 $sql->execute();
 
-                echo "Data entered for " . $item_id . PHP_EOL;
+                echo "Data entered for " . $id . PHP_EOL;
                 
             } catch (PDOException $e) {
                 echo "Cannot add entry: " . $e->getMessage();
             }
-        }
-    }
 }
 ?>
