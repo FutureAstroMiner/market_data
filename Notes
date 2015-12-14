@@ -8,11 +8,10 @@ To run a php file outside of apachy run this in the command line
 C:\xampp\php\php -f "C:\xampp\htdocs\Eve_industry_data\updateBD.php"
 
 To do
-Get item list from Crest
-Get prices from Crest
+
 Calculate profit on items - Done
-Display most profitable
+Display most profitable - Done
 Create log file - Currently not working
+Use table invnames to get item names
 
 Creating table is failing?
-Data in table is all zeros??? - Run a test on a single insertion using a different file
