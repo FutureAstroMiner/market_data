@@ -10,5 +10,8 @@ C:\xampp\php\php -f "C:\xampp\htdocs\Eve_industry_data\updateBD.php"
 To do
 Get item list from Crest
 Get prices from Crest
-Calculate profit on items
+Calculate profit on items - Done
 Display most profitable
+Create log file - Currently not working
+
+Creating table is failing?
