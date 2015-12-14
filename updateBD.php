@@ -30,7 +30,8 @@ try {
         typeID BIGINT PRIMARY KEY,
         volume DOUBLE,
         max DECIMAL(19,2),
-        min DECIMAL(19,2)
+        min DECIMAL(19,2),
+        profit DECIMAL(19,2)
         )");
         $sql->execute();
         echo "Table created successfully" . PHP_EOL;
@@ -61,7 +62,7 @@ $chunked_array_size = count($chunked_array);
 //for each smaller array construct the url
 foreach ($chunked_array as $chunk) {
 //$chunk = $chunked_array[0];
-    
+
     echo 'Starting chunk ' . $num . ' of ' . $chunked_array_size . PHP_EOL;
     set_time_limit(30);
     $item_string = '';
@@ -78,9 +79,9 @@ foreach ($chunked_array as $chunk) {
     curl_close($curl_handle);
 
     echo 'Webpage returned.' . PHP_EOL;
-    
+
     processWebpage($http);
-    
+
     $num +=1;
 }
 
@@ -88,7 +89,7 @@ foreach ($chunked_array as $chunk) {
 function processWebpage($webpage) {
     $xml = simplexml_load_string($webpage);
     echo 'Data returned ' . $xml->children()->children()->count() . PHP_EOL;
-    
+
 //find the values returned
     foreach ($xml->children()->children() as $item) {
 
@@ -98,27 +99,27 @@ function processWebpage($webpage) {
             $buy = implode($item->xpath("/buy/max"));
             $sell = implode($item->xpath("/sell/min"));
             $buy_vol = implode($item->xpath("/buy/volume"));
-            
+
             //add the data returned to the BD
             enterValues($item_id, $buy, $sell, $buy_vol);
         }
     }
-    
 }
 
 // Helper function to enter values into database
 function enterValues($id, $highistBuy, $lowestSell, $salesVolume) {
     try {
         global $conn;
-                $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min) "
-                        . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell') ON DUPLICATE KEY "
-                        . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min)");
-                $sql->execute();
+        $profit = ($lowestSell - $highistBuy) * $salesVolume;
+        $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min, profit) "
+                . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell', '$profit') ON DUPLICATE KEY "
+                . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min), profit=VALUES(profit)");
+        $sql->execute();
 
-                echo "Data entered for " . $id . PHP_EOL;
-                
-            } catch (PDOException $e) {
-                echo "Cannot add entry: " . $e->getMessage();
-            }
+        echo "Data entered for " . $id . PHP_EOL;
+    } catch (PDOException $e) {
+        echo "Cannot add entry: " . $e->getMessage();
+    }
 }
+
 ?>

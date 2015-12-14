@@ -2,7 +2,13 @@ How to import a mySQL data file
 mysql -p -u {username} {database} < file.sql
 
 When using xampp this would be 
-C:\xampp\mysql\bin\mysql -p -u root eve < C:\Users\Adam\Downloads\parallax-1-115480\mysql56-parallax-1-115480.sql
+C:\xampp\mysql\bin\mysql -p -u root test < C:\Users\Adam\Downloads\parallax-1-115480\mysql56-parallax-1-115480.sql
 
 To run a php file outside of apachy run this in the command line
 C:\xampp\php\php -f "C:\xampp\htdocs\Eve_industry_data\updateBD.php"
+
+To do
+Get item list from Crest
+Get prices from Crest
+Calculate profit on items
+Display most profitable
