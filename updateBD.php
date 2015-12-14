@@ -12,6 +12,17 @@ $username = "root";
 $password = "root";
 $dbname = "test";
 
+$file = "log.txt";
+if (!unlink($file)) {
+    echo ("Error deleting $file");
+} else {
+    echo ("Deleted $file");
+}
+
+$log = fopen("log.txt", "w") or die("Unable to open file!");
+
+fwrite($log, "Starting Log!" . PHP_EOL);
+
 try {
     $conn = new PDO("mysql:host=$servername;dbname=$dbname", $username, $password);
     // set the PDO error mode to exception
@@ -41,7 +52,7 @@ try {
 }
 try {
     //Selecting all itemID's that are buyable on the market and are not BP's or skils
-    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID NOT IN (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
+    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID <> ANY (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
     $query->execute();
 
     $item_ids = $query->fetchAll();
@@ -54,9 +65,7 @@ try {
 //chunk array into smaller arrays
 //100is the max possible for the max size URL
 $chunked_array = array_chunk($item_ids, 100, TRUE);
-
 $num = 1;
-
 $chunked_array_size = count($chunked_array);
 
 //for each smaller array construct the url
@@ -69,6 +78,7 @@ foreach ($chunked_array as $chunk) {
     foreach ($chunk as $value) {
         $item_string .= 'typeid=' . intval($value['typeID']) . '&';
     }
+    fwrite($log, "Looking for items $item_string" . PHP_EOL);
 
     echo 'Quering market data for ' . count($chunk) . ' items' . PHP_EOL;
 
@@ -96,9 +106,9 @@ function processWebpage($webpage) {
         $item_id = $item->attributes();
 
         if ($xml !== FALSE) {
-            $buy = implode($item->xpath("/buy/max"));
-            $sell = implode($item->xpath("/sell/min"));
-            $buy_vol = implode($item->xpath("/buy/volume"));
+            $buy = floatval($item->buy->max);
+            $sell = floatval($item->sell->min);
+            $buy_vol = floatval($item->buy->volume);
 
             //add the data returned to the BD
             enterValues($item_id, $buy, $sell, $buy_vol);
@@ -122,4 +132,5 @@ function enterValues($id, $highistBuy, $lowestSell, $salesVolume) {
     }
 }
 
+fclose($log);
 ?>
