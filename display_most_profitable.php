@@ -22,7 +22,7 @@ try {
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage() . PHP_EOL;
 }
-   $query = $conn->prepare("SELECT * FROM `jitamarket` ORDER BY profit DESC Limit 0,20 ");
+   $query = $conn->prepare("SELECT i.typeID, i.typeName, j.typeID, j.volume, j.max, j.min, j.profit FROM invtypes AS i INNER JOIN jitamarket AS J ON j.typeID = i.typeID WHERE j.volume > 500.00 ORDER BY j.profit DESC Limit 0,30");
     $query->execute();
 
     $profitable_items = $query->fetchAll();
