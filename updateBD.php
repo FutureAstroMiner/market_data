@@ -39,7 +39,8 @@ try {
     } else {
         $sql = $conn->prepare("CREATE TABLE jitamarket (
         typeID BIGINT PRIMARY KEY,
-        volume DOUBLE,
+        buyVolume DOUBLE,
+        sellVolume DOUBLE,
         max DECIMAL(19,2),
         min DECIMAL(19,2),
         delta DECIMAL(19,2),
@@ -110,22 +111,23 @@ function processWebpage($webpage) {
             $buy = floatval($item->buy->max);
             $sell = floatval($item->sell->min);
             $buy_vol = floatval($item->buy->volume);
+            $sell_vol = floatval($item->sell->volume);
 
             //add the data returned to the BD
-            enterValues($item_id, $buy, $sell, $buy_vol);
+            enterValues($item_id, $buy, $sell, $buy_vol, $sell_vol);
         }
     }
 }
 
 // Helper function to enter values into database
-function enterValues($id, $highistBuy, $lowestSell, $salesVolume) {
+function enterValues($id, $highistBuy, $lowestSell, $buyVolume, $sellVolume) {
     try {
         global $conn;
         $delta = $lowestSell - $highistBuy;
-        $profit = $delta * $salesVolume;
-        $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min, delta, profit) "
-                . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') ON DUPLICATE KEY "
-                . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min), delta=VALUES(delta), profit=VALUES(profit)");
+        $profit = $delta * $buyVolume;
+        $sql = $conn->query("INSERT INTO jitamarket (typeID, buyVolume, sellVolume, max, min, delta, profit) "
+                . "VALUES ('$id', '$buyVolume', '$sellVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') ON DUPLICATE KEY "
+                . "UPDATE buyVolume=VALUES(buyVolume), sellVolume=VALUES(sellVolume), max=VALUES(max), min=VALUES(min), delta=VALUES(delta), profit=VALUES(profit)");
         $sql->execute();
 
         echo "Data entered for " . $id . PHP_EOL;
