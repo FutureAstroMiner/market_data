@@ -42,6 +42,7 @@ try {
         volume DOUBLE,
         max DECIMAL(19,2),
         min DECIMAL(19,2),
+        delta DECIMAL(19,2),
         profit DECIMAL(19,2)
         )");
         $sql->execute();
@@ -52,7 +53,7 @@ try {
 }
 try {
     //Selecting all itemID's that are buyable on the market and are not BP's or skils
-    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE invtypes.groupID <> ANY (SELECT groupID FROM `invgroups` WHERE categoryID IN (9, 16)) AND `marketGroupID` IS NOT NULL");
+    $query = $conn->prepare("SELECT typeID FROM `invtypes` WHERE `marketGroupID` IS NOT NULL");
     $query->execute();
 
     $item_ids = $query->fetchAll();
@@ -120,10 +121,11 @@ function processWebpage($webpage) {
 function enterValues($id, $highistBuy, $lowestSell, $salesVolume) {
     try {
         global $conn;
-        $profit = ($lowestSell - $highistBuy) * $salesVolume;
-        $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min, profit) "
-                . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell', '$profit') ON DUPLICATE KEY "
-                . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min), profit=VALUES(profit)");
+        $delta = $lowestSell - $highistBuy;
+        $profit = $delta * $salesVolume;
+        $sql = $conn->query("INSERT INTO jitamarket (typeID, volume, max, min, delta, profit) "
+                . "VALUES ('$id', '$salesVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') ON DUPLICATE KEY "
+                . "UPDATE volume=VALUES(volume), max=VALUES(max), min=VALUES(min), delta=VALUES(delta), profit=VALUES(profit)");
         $sql->execute();
 
         echo "Data entered for " . $id . PHP_EOL;
