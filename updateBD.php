@@ -126,7 +126,8 @@ function enterValues($id, $highistBuy, $lowestSell, $buyVolume, $sellVolume) {
         $delta = $lowestSell - $highistBuy;
         $profit = $delta * $buyVolume;
         $sql = $conn->query("INSERT INTO jitamarket (typeID, buyVolume, sellVolume, max, min, delta, profit) "
-                . "VALUES ('$id', '$buyVolume', '$sellVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') ON DUPLICATE KEY "
+                . "VALUES ('$id', '$buyVolume', '$sellVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') "
+                . "ON DUPLICATE KEY "
                 . "UPDATE buyVolume=VALUES(buyVolume), sellVolume=VALUES(sellVolume), max=VALUES(max), min=VALUES(min), delta=VALUES(delta), profit=VALUES(profit)");
         $sql->execute();
 
