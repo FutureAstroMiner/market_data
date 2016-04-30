@@ -15,4 +15,10 @@ Create log file - Currently not working
 Display most profitable in table - Done
 Create a page to ask for the sell and buy volume - Done
 
+Create a log database ID, Time, Text
 
+Create a database table that is checked by a cron job to see if the table update has been requested.
+    Could just have update requested (yes/no), last update time
+
+Use quicklook to get total number of orders in Jita to look for smaller compatation
+    http://api.eve-central.com/api/quicklook?typeid=34&usesystem=30000142
