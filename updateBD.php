@@ -1,9 +1,8 @@
 <?php
 
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * 
+ * 
  *  to test run C:\xampp\php\php -f "C:\xampp\htdocs\Eve_industry_data\updateBD.php"
  */
 
@@ -12,11 +11,13 @@ $username = "root";
 $password = "root";
 $dbname = "test";
 
+//Do the log file as a database log
+//The colums should be ID (auto increment), Time, Text
 $file = "log.txt";
 if (!unlink($file)) {
-    echo ("Error deleting $file");
+    echo ("Error deleting $file" . PHP_EOL);
 } else {
-    echo ("Deleted $file");
+    echo ("Deleted $file" . PHP_EOL);
 }
 
 $log = fopen("log.txt", "w") or die("Unable to open file!");
@@ -34,9 +35,11 @@ try {
     $val->execute();
 
     //Checking if the table exists and then creating it if it doesn't
-    if ($val !== FALSE) {
-        echo "Table exists" . PHP_EOL;
-    } else {
+    //if ($val !== FALSE) {
+    //    echo "Table exists" . PHP_EOL;
+    //} else {
+        $sql = $conn->prepare("DROP TABLE jitamarket");
+        $sql->execute();
         $sql = $conn->prepare("CREATE TABLE jitamarket (
         typeID BIGINT PRIMARY KEY,
         buyVolume DOUBLE,
@@ -48,7 +51,7 @@ try {
         )");
         $sql->execute();
         echo "Table created successfully" . PHP_EOL;
-    }
+    //}
 } catch (PDOException $e) {
     echo "Connection failed: " . $e->getMessage() . PHP_EOL;
 }
@@ -107,14 +110,17 @@ function processWebpage($webpage) {
 
         $item_id = $item->attributes();
 
+        //TODO Have values as string and remove the decimal
         if ($xml !== FALSE) {
-            $buy = floatval($item->buy->max);
-            $sell = floatval($item->sell->min);
+            $buy = floatval($item->buy->max); //The price I would have to buy it at to beat others
+            $sell = floatval($item->sell->min); //Lowest price I can sell it at
             $buy_vol = floatval($item->buy->volume);
             $sell_vol = floatval($item->sell->volume);
 
             //add the data returned to the BD
-            enterValues($item_id, $buy, $sell, $buy_vol, $sell_vol);
+            if ($buy >0 && $sell>0 && $buy_vol>0 && $sell_vol>0){
+                enterValues($item_id, $buy, $sell, $buy_vol, $sell_vol);
+            }
         }
     }
 }
@@ -122,8 +128,11 @@ function processWebpage($webpage) {
 // Helper function to enter values into database
 function enterValues($id, $highistBuy, $lowestSell, $buyVolume, $sellVolume) {
     try {
+        //Change to using string without the decimal
+        //calculations should not change but entering into database needs the decimal
         global $conn;
-        $delta = $lowestSell - $highistBuy;
+        
+        $delta = ($lowestSell - $highistBuy)/ $highistBuy;
         $profit = $delta * $buyVolume;
         $sql = $conn->query("INSERT INTO jitamarket (typeID, buyVolume, sellVolume, max, min, delta, profit) "
                 . "VALUES ('$id', '$buyVolume', '$sellVolume', '$highistBuy', '$lowestSell', '$delta', '$profit') "

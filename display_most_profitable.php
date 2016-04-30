@@ -16,6 +16,7 @@ $dbname = "test";
 
 $sellVol = (int) $_GET["sellVol"];
 $buyVol = (int) $_GET["buyVol"];
+$delta = (int) $_GET["delta"];
 
 
 try {
@@ -28,14 +29,18 @@ try {
     echo "Connection failed: " . $e->getMessage() . PHP_EOL;
 }
    $query = $conn->prepare(
-           "SELECT i.typeID, i.typeName, j.typeID, j.sellVolume, j.buyVolume, j.max, j.min, j.profit "
+           "SELECT i.typeID, i.typeName, j.typeID, j.sellVolume, j.buyVolume, j.max, j.min, j.profit, j.delta "
            . "FROM invtypes AS i "
            . "INNER JOIN jitamarket AS J ON j.typeID = i.typeID "
            . "WHERE j.buyVolume > {$buyVol} AND j.sellVolume > {$sellVol} "
+           . "AND j.delta > {$delta} "
+           . "AND i.marketGroupID <> 19 " //market group 19 is trade goods so removing it
            . "ORDER BY j.profit DESC Limit 0,30");
     $query->execute();
 
     $profitable_items = $query->fetchAll();
+    //echo "<pre>" . print_r($profitable_items) . "</pre>";
+    
     echo '<table>
     <tr>
     <td>Item Name</td>
@@ -43,6 +48,7 @@ try {
     <td>Buy Volume</td>
     <td>Max Buy price</td>
     <td>Min Sell price</td>
+    <td>Delta</td>
     <td>Total Potential Profit</td>
   </tr>';
     foreach ($profitable_items as $item) {
@@ -52,6 +58,7 @@ try {
         . "<td>{$item['buyVolume']}</td>"
         . "<td>{$item['max']}</td>"
         . "<td>{$item['min']}</td>"
+        . "<td>{$item['delta']}</td>"
         . "<td>{$item['profit']}</td>"
         . "</tr>";
     }
