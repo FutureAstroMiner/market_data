@@ -28,7 +28,7 @@ try {
     echo "Connection failed: " . $e->getMessage() . PHP_EOL;
 }
 $query = $conn->prepare(
-        "SELECT i.typeID, i.typeName, j.typeID, j.sellVolume, j.buyVolume, j.max, j.min, j.profit, j.delta "
+        "SELECT i.typeID, i.typeName, j.typeID, j.sellVolume, j.buyVolume, j.max, j.min, j.orders, j.profit, j.delta "
         . "FROM invtypes AS i "
         . "INNER JOIN jitamarket AS J ON j.typeID = i.typeID "
         . "WHERE j.buyVolume > {$buyVol} AND j.sellVolume > {$sellVol} "
@@ -49,6 +49,7 @@ echo '<table>
     <td>Max Buy price</td>
     <td>Min Sell price</td>
     <td>Delta</td>
+    <td>Orders</td>
     <td>Total Potential Profit</td>
   </tr>';
 foreach ($profitable_items as $item) {
@@ -59,6 +60,7 @@ foreach ($profitable_items as $item) {
     . "<td>{$item['max']}</td>"
     . "<td>{$item['min']}</td>"
     . "<td>{$item['delta']}</td>"
+    . "<td>{$item['orders']}</td>"
     . "<td>{$item['profit']}</td>"
     . "</tr>";
 }

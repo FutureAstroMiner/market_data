@@ -31,8 +31,8 @@ try {
     echo "Connected successfully" . PHP_EOL;
 
     //Quick query
-    $val = $conn->prepare('select 1 from jitamarket LIMIT 1');
-    $val->execute();
+//    $val = $conn->prepare('select 1 from jitamarket LIMIT 1');
+//    $val->execute();
 
     //Checking if the table exists and then creating it if it doesn't
     //if ($val !== FALSE) {
@@ -46,6 +46,7 @@ try {
         sellVolume DOUBLE,
         max DECIMAL(19,2),
         min DECIMAL(19,2),
+        orders INT,
         delta DECIMAL(19,2),
         profit DECIMAL(19,2)
         )");
@@ -68,7 +69,7 @@ try {
 }
 
 //chunk array into smaller arrays
-//100is the max possible for the max size URL
+//100 is the max possible for the max size URL
 $chunked_array = array_chunk($item_ids, 100, TRUE);
 $num = 1;
 $chunked_array_size = count($chunked_array);
